@@ -36,7 +36,6 @@ func producer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msg := "Task added in the queue\n"
-	fmt.Printf(msg)
 	w.Write([]byte(msg))
 	return
 }
@@ -48,7 +47,6 @@ func worker(err chan error, worker_id uint16) {
 			err <- e
 		}
 		if data == nil {
-			fmt.Println("Queue is empty")
 			time.Sleep(10 * time.Second)
 			continue
 		}

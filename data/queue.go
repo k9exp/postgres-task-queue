@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -54,15 +55,25 @@ type TaskData struct {
 func GetTask() (*TaskData, error) {
 	var data TaskData
 
-	err := DB.QueryRow(`SELECT task_id, text, time FROM queue FOR UPDATE SKIP LOCKED LIMIT 1;`).Scan(&data.Task_id, &data.Text, &data.Time)
+	trx, err := DB.BeginTx(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+    defer trx.Rollback()
+
+	err = trx.QueryRow(`SELECT task_id, text, time FROM queue FOR UPDATE SKIP LOCKED LIMIT 1;`).Scan(&data.Task_id, &data.Text, &data.Time)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	} else if err != nil {
 		return nil, err
 	}
 
-	_, err = DB.Exec("DELETE FROM queue WHERE task_id = $1;", data.Task_id)
+	_, err = trx.Exec("DELETE FROM queue WHERE task_id = $1;", data.Task_id)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := trx.Commit(); err != nil {
 		return nil, err
 	}
 
