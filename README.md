@@ -2,6 +2,8 @@
 
 Using postgres to make a task queue
 
+Blog: https://kunalsin9h.com/blog/potgres-task-queue
+
 Run the following commands to get started:
 
 ```bash
